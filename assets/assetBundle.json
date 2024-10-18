@@ -1,0 +1,23 @@
+[
+  {
+    "name": "load-atlas",
+    "assets": [
+      {
+        "alias": "enemy1",
+        "src": "./atlas/images/Bandit.png"
+      },
+      {
+        "alias": "enemy2",
+        "src": "./atlas/images/Goblin.png"
+      },
+      {
+        "alias": "enemy3",
+        "src": "./atlas/images/Ogre.png"
+      },
+      {
+        "alias": "slot_tower",
+        "src": "./atlas/images/slot_tower.png"
+      }
+    ]
+  }
+]

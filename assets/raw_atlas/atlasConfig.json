@@ -1,0 +1,15 @@
+{
+  "options": {
+    "textureName": "unknown",
+    "width": 1024,
+    "height": 1024,
+    "exporter": "Pixi",
+    "fixedSize": false,
+    "padding": 1,
+    "extrude": 1,
+    "allowRotation": true,
+    "detectIdentical": true,
+    "allowTrim": true,
+    "packer": "OptimalPacker"
+  }
+}
