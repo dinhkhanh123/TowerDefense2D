@@ -17,6 +17,10 @@
       {
         "alias": "slot_tower",
         "src": "./atlas/images/slot_tower.png"
+      },
+      {
+        "alias": "range_tower",
+        "src": "./atlas/images/range.png"
       }
     ]
   }

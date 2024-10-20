@@ -1,38 +1,49 @@
+import { PointData, Sprite } from "pixi.js";
+import { TowerType } from "../types/TowerType";
+import AssetLoad from "../utils/AssetLoad";
+import { Enemy } from "./Enemy";
+import { ProjectileController } from "../controllers/ProjectileController";
+
 export class Projectile {
-    id: string;            // ID của projectile
-    damage: number;        // Lượng sát thương mà projectile gây ra
-    speed: number;         // Tốc độ di chuyển của projectile
-    position: { x: number, y: number }; // Vị trí hiện tại của projectile
-    direction: { x: number, y: number }; // Hướng di chuyển của projectile
-    range: number;         // Phạm vi mà projectile có thể di chuyển trước khi biến mất
-    traveledDistance: number; // Khoảng cách mà projectile đã di chuyển
+    id: number;
+    sprite: Sprite;
+    damage: number;
+    speed: number;
+    type: string;
+    target!: Enemy;
 
-    constructor(id: string, damage: number, speed: number, position: { x: number, y: number }, direction: { x: number, y: number }, range: number) {
+    constructor(id: number, sprite: Sprite, type: string) {
         this.id = id;
-        this.damage = damage;
-        this.speed = speed;
-        this.position = position;
-        this.direction = direction;
-        this.range = range;
-        this.traveledDistance = 0;
+        this.type = type;
+        this.sprite = sprite;
+        this.sprite.scale.set(.8);
+        this.damage = 5;
+        this.speed = 5;
     }
 
-    // Di chuyển projectile theo hướng đã định
-    move(deltaTime: number): void {
-        const distance = this.speed * deltaTime;
-        this.position.x += this.direction.x * distance;
-        this.position.y += this.direction.y * distance;
-        this.traveledDistance += distance;
+    setTarget(enemyTarget: Enemy) {
+        this.target = enemyTarget;
     }
 
-    // Kiểm tra xem projectile có đạt giới hạn phạm vi hay chưa
-    isOutOfRange(): boolean {
-        return this.traveledDistance >= this.range;
+    update(deltaTime: number): void {
+        this.target.getUpdatePositionEnemy();
+        const dx = this.target.sprite.x + 10 - this.sprite.x;
+        const dy = this.target.sprite.y + 20 - this.sprite.y;
+
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        this.sprite.rotation = Math.atan2(dy, dx);
+        if (distance < this.speed * deltaTime) {
+            this.hit();
+        } else {
+            this.sprite.x += (dx / distance) * this.speed * deltaTime;
+            this.sprite.y += (dy / distance) * this.speed * deltaTime;
+        }
     }
 
     // Gây sát thương khi va chạm
-    hit(target: { takeDamage: (damage: number) => void }): void {
-        target.takeDamage(this.damage);
-        console.log(`Projectile ${this.id} đã gây ${this.damage} sát thương lên mục tiêu.`);
+    hit(): void {
+        this.target.takeDamage(this.target.id, this.damage)
+        ProjectileController.getInstance().removeProjectile(this.type, this);
     }
 }

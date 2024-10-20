@@ -1,0 +1,87 @@
+{
+  "frames": {
+    "Archer_Projectile_01_1": {
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 40,
+        "h": 8
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 1,
+        "w": 40,
+        "h": 8
+      },
+      "sourceSize": {
+        "w": 40,
+        "h": 10
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Archer_Projectile_01_2": {
+      "frame": {
+        "x": 2,
+        "y": 14,
+        "w": 40,
+        "h": 6
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 2,
+        "w": 40,
+        "h": 6
+      },
+      "sourceSize": {
+        "w": 40,
+        "h": 10
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Archer_Projectile_01_3": {
+      "frame": {
+        "x": 2,
+        "y": 24,
+        "w": 40,
+        "h": 6
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 2,
+        "w": 40,
+        "h": 6
+      },
+      "sourceSize": {
+        "w": 40,
+        "h": 10
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://github.com/odrick/free-tex-packer-core",
+    "version": "0.3.4",
+    "image": "projectiles_atlas.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 44,
+      "h": 32
+    },
+    "scale": 1
+  }
+}

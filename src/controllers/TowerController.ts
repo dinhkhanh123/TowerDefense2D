@@ -4,17 +4,18 @@ import { Tower } from "../models/Tower";
 import { ObjectPool } from "../utils/ObjectPool";
 import AssetLoad from "../utils/AssetLoad";
 import { GameScene } from "../scenes/GameScene";
+import { EnemyController } from "./EnemyController";
 
 export class TowerController {
     private static instance: TowerController;
     private map: Container;
     private towers: Tower[] = [];
-    private objectPool: ObjectPool;
+
 
     constructor(map: Container) {
         TowerController.instance = this;
         this.map = map;
-        this.objectPool = new ObjectPool();
+
     }
 
     public static getInstance(map?: Container): TowerController {
@@ -28,9 +29,7 @@ export class TowerController {
     }
 
     createTower(towerType: TowerType, baseSprite: Sprite) {
-        const tower = this.objectPool.getTowerFromPool(towerType);
-        console.log(tower);
-        console.log(baseSprite.position.x);
+        const tower = ObjectPool.instance.getTowerFromPool(towerType);
 
         baseSprite.removeAllListeners();
         this.map.removeChild(baseSprite);
@@ -52,7 +51,7 @@ export class TowerController {
         if (idx !== -1) {
             this.towers.splice(idx, 1);
             this.map.removeChild(tower.sprite);
-            this.objectPool.returnTowerToPool(tower.name, tower);
+            ObjectPool.instance.returnTowerToPool(tower.name, tower);
         }
 
         const slotTowerSprite = new Sprite(Texture.from('slot_tower'));
@@ -67,5 +66,33 @@ export class TowerController {
         });
 
         this.map.addChild(slotTowerSprite);
+    }
+
+    update(deltaTime: number) {
+        this.towers.forEach(tower => {
+            const targetInRange = EnemyController.getInstance()
+                .getEnemy()
+                .filter(
+                    enemy =>
+                        enemy.isAlive &&
+                        tower.isInRange(enemy.getUpdatePositionEnemy()
+                        ));
+
+            targetInRange.forEach(enemy => {
+                if (!tower.targets.includes(enemy)) {
+                    tower.targets.push(enemy);
+                }
+            });
+
+            if (tower.targets.length > 0) {
+                const target = tower.targets[0];
+                if (!target.isAlive || !tower.isInRange(target.getUpdatePositionEnemy())) {
+                    tower.targets.shift();
+                } else {
+                    tower.setTarget(target);
+                    tower.update(deltaTime);
+                }
+            }
+        });
     }
 }

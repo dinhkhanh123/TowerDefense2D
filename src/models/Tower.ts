@@ -1,5 +1,7 @@
-import { Sprite, Texture } from "pixi.js";
+import { PointData, Sprite, Texture } from "pixi.js";
 import AssetLoad from "../utils/AssetLoad";
+import { Enemy } from "./Enemy";
+import { ProjectileController } from "../controllers/ProjectileController";
 
 export class Tower {
     id: number;             // ID của tháp
@@ -12,6 +14,11 @@ export class Tower {
     level: number;          // Cấp độ của tháp
     position!: { x: number; y: number }; // Vị trí của tháp trên bản đồ
     projectileType: string; // Loại đạn bắn ra (có thể là tên class đạn hoặc ID)
+    targets: Enemy[] = [];
+    target!: Enemy;
+
+    private cooldownTime: number;
+    private attackTime: number;
 
     constructor(
         id: number,
@@ -31,7 +38,15 @@ export class Tower {
         this.cost = cost;
         this.level = 1; // Tháp khởi đầu ở level 1
 
+        this.cooldownTime = 50;
+        this.attackTime = 0;
+
         this.projectileType = projectileType;
+
+    }
+
+    setTarget(target: Enemy) {
+        this.target = target;
     }
 
     // Phương thức nâng cấp tháp
@@ -44,8 +59,25 @@ export class Tower {
     }
 
     // Phương thức bắn đạn
-    shoot(target: any): void {
-        console.log(`${this.name} bắn vào mục tiêu ${target.id}`);
-        // Thực hiện logic bắn đạn, có thể dựa trên loại đạn được định nghĩa trong projectileType
+    update(deltaTime: number): void {
+        // const dx = this.target.sprite.x - this.sprite.x;
+        // const dy = this.target.sprite.y - this.sprite.y;
+
+        // const angle = Math.atan2(dy, dx);
+        // this.spriteAniTower.rotation = angle + Math.PI / 2;
+
+        this.attackTime += deltaTime;
+        if (this.attackTime >= this.cooldownTime) {
+            ProjectileController.getInstance().createProjectile(this, this.target);
+            this.attackTime = 0;
+        }
+    }
+
+    public isInRange(enemyPosition: PointData): boolean {
+        const distance = Math.sqrt(
+            Math.pow(enemyPosition.x - this.sprite.x, 2) +
+            Math.pow(enemyPosition.y - this.sprite.y, 2)
+        );
+        return distance <= this.range;
     }
 }

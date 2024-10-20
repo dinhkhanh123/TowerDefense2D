@@ -4,6 +4,8 @@ import { Enemy } from "../models/Enemy";
 import { EnemyTypes } from "../types/EnemyTypes";
 import { TowerType } from '../types/TowerType';
 import { TowerFactory } from '../factories/TowerFactory';
+import { Projectile } from '../models/Projectile';
+import { ProjectileFactory } from '../factories/ProjectileFactory';
 
 
 export class ObjectPool {
@@ -11,8 +13,8 @@ export class ObjectPool {
     private poolSize: number = 10;
 
     private _towerPool: { [towerType: string]: Tower[] } = {};
-
     private _enemyPool: { [enemyType: string]: Enemy[] } = {};
+    private _projectilePool: { [towerType: string]: Projectile[] } = {};
 
 
     constructor() {
@@ -33,6 +35,16 @@ export class ObjectPool {
 
         Object.values(TowerType).forEach((towerType) => {
             this._towerPool[towerType] = [];
+            for (let i = 0; i < this.poolSize; i++) {
+                const tower = TowerFactory.createTower(towerType);
+                if (tower) {
+                    this._towerPool[towerType].push(tower);
+                } else {
+                    console.error(`Không thể tạo công trình với loại ${towerType}`);
+                }
+            }
+
+            this._projectilePool[towerType] = [];
             for (let i = 0; i < this.poolSize; i++) {
                 const tower = TowerFactory.createTower(towerType);
                 if (tower) {
@@ -79,5 +91,25 @@ export class ObjectPool {
     // Hàm trả tower về pool
     public returnTowerToPool(towerType: string, tower: Tower): void {
         this._towerPool[towerType].push(tower);
+    }
+
+    // Hàm lấy Projectile từ pool
+    public getProjectileFromPool(projectileType: string): Projectile {
+        if (this._projectilePool[projectileType] ?.length <= 0) {
+            const projectile = ProjectileFactory.createProjectile(projectileType);
+
+            if (projectile) {
+                return projectile;
+            } else {
+                throw new Error(`Không thể tạo projectile mới cho loại ${projectileType}`);
+            }
+        } else {
+            return this._projectilePool[projectileType].pop() as Projectile;
+        }
+    }
+
+    // Hàm trả projectile về pool
+    public returnProjectileToPool(towerType: string, projectile: Projectile) {
+        this._projectilePool[towerType].push(projectile);
     }
 }

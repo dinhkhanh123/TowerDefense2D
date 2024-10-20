@@ -1,5 +1,6 @@
 import { Container, Graphics, PointData, Sprite, Texture } from "pixi.js";
 import { BfsPathfinding } from "../utils/BfsPathfinding";
+import { EnemyController } from "../controllers/EnemyController";
 
 export class Enemy {
     id: number;
@@ -14,6 +15,7 @@ export class Enemy {
     goalPosition!: { x: number, y: number };
     pathfinding!: BfsPathfinding;
     currentPathIndex: number = 0;
+    isAlive: boolean;
 
     constructor(
         id: number,
@@ -30,9 +32,10 @@ export class Enemy {
         this.speed = speed;
         this.damage = damage;
         this.reward = reward;
+        this.isAlive = true;
 
         const sprite = new Sprite(Texture.from('enemy1'));
-        //sprite.anchor.set(0.5);
+
         this.sprite.addChild(sprite);
     }
 
@@ -40,6 +43,19 @@ export class Enemy {
         this.currentPosition = { x: pointStart.x, y: pointStart.y };
         this.goalPosition = { x: pointEnd.x, y: pointEnd.y };
         this.pathfinding = path;
+    }
+
+    takeDamage(id: number, damage: number) {
+        if (id === this.id) {
+            this.hp -= damage;
+
+            if (this.hp <= 0) {
+                this.hp = 0;
+                this.isAlive = false;
+
+                EnemyController.getInstance().removeEnemy(this);
+            }
+        }
     }
 
     update(deltaTime: number) {

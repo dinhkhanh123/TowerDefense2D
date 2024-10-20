@@ -7,31 +7,42 @@ import { EventHandle } from '../utils/EventHandle';
 import { Tower } from '../models/Tower';
 import { TowerType } from '../types/TowerType';
 import AssetLoad from '../utils/AssetLoad';
+import { ObjectPool } from '../utils/ObjectPool';
+import { ProjectileController } from '../controllers/ProjectileController';
 
 
 export class GameScene extends Container {
     public static instance: GameScene;
     private app: Application;
     private levelManager: LevelManager;
+    private objectPool: ObjectPool;
     private mapContainer: Container;
     private controlPanel: Container;
 
     public slotTower!: Sprite;
+    private towerRange: Sprite;
 
     private tileSize: number;
+
+
 
     constructor(app: Application, levelId: number) {
         super();
         GameScene.instance = this;
         this.app = app;
+        this.objectPool = new ObjectPool();
         this.mapContainer = new Container();
         this.controlPanel = new Container();
         this.levelManager = new LevelManager(levelId);
         const levelData = this.levelManager.getLevelData();
         this.tileSize = levelData.map.tileSize;
 
+        this.towerRange = new Sprite();
+
+
 
         TowerController.getInstance(this.mapContainer);
+        ProjectileController.getInstance(this.mapContainer);
         EnemyController.getInstance(this.mapContainer, levelData.map.tiles);
 
 
@@ -40,6 +51,8 @@ export class GameScene extends Container {
 
         this.app.ticker.add(time => {
             EnemyController.getInstance().update(time.deltaTime);
+            TowerController.getInstance().update(time.deltaTime);
+            ProjectileController.getInstance().update(time.deltaTime);
         });
 
         this.controlPanel.visible = false;
@@ -140,23 +153,16 @@ export class GameScene extends Container {
         }
     }
 
-    createCardTower(type: TowerType, x: number, y: number): Container {
-        const card = new Container();
-        const spriteTower = new Sprite(AssetLoad.getTexture('Archer_01'));
-        spriteTower.position.set(x, y);
-
-
-        spriteTower.interactive = true;
-        spriteTower.cursor = 'pointer';
-        spriteTower.on('pointerdown', () => {
-            TowerController.getInstance().createTower(type, this.slotTower);
-        });
-        card.addChild(spriteTower);
-        return card;
-    }
-
     displayTowerInfo(tower: Tower) {
         this.controlPanel.visible = true;
+
+        this.towerRange.texture = Texture.from('range_tower');
+        this.towerRange.anchor.set(0.5);
+        this.towerRange.position.set(tower.sprite.x + 32, tower.sprite.y + 32);
+        this.towerRange.width = tower.range * 2;
+        this.towerRange.height = tower.range * 2;
+        this.controlPanel.addChild(this.towerRange);
+
 
         const grapbg = new Graphics();
         grapbg.rect(0, 640, 1024, 160);
@@ -178,8 +184,27 @@ export class GameScene extends Container {
         removeTowerBtn.fill(0xFFCFB3);
         removeTowerBtn.interactive = true;
         removeTowerBtn.cursor = 'pointer';
-        removeTowerBtn.on('pointerdown', () => { TowerController.getInstance().removeTower(tower, tower.cost) });
+        removeTowerBtn.on('pointerdown', () => {
+            TowerController.getInstance().removeTower(tower, tower.cost);
+            this.towerRange.texture = Texture.EMPTY;
+        });
         this.controlPanel.addChild(removeTowerBtn);
     }
 
+
+
+    createCardTower(type: TowerType, x: number, y: number): Container {
+        const card = new Container();
+        const spriteTower = new Sprite(AssetLoad.getTexture('Archer_01'));
+        spriteTower.position.set(x, y);
+
+
+        spriteTower.interactive = true;
+        spriteTower.cursor = 'pointer';
+        spriteTower.on('pointerdown', () => {
+            TowerController.getInstance().createTower(type, this.slotTower);
+        });
+        card.addChild(spriteTower);
+        return card;
+    }
 }

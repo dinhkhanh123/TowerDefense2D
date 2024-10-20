@@ -8,13 +8,13 @@ export class EnemyController {
     private static instance: EnemyController;
     private map: Container;
     private enemies: Enemy[] = [];
-    private objectPool: ObjectPool;
+
     private grid: number[][];
 
     private constructor(map: Container, grid: number[][]) {
         this.map = map;
         this.grid = grid;
-        this.objectPool = new ObjectPool();
+
     }
 
     public static getInstance(map?: Container, grid?: number[][]): EnemyController {
@@ -29,7 +29,7 @@ export class EnemyController {
 
     // Tạo enemy mới dựa trên vị trí spawnPoint và mục tiêu
     public createEnemy(spawnPoint: { x: number, y: number }, goal: { x: number, y: number }, enemyType: string) {
-        const enemy = this.objectPool.getEnemyFromPool(enemyType);
+        const enemy = ObjectPool.instance.getEnemyFromPool(enemyType);
 
         enemy.sprite.x = spawnPoint.x * 64;
         enemy.sprite.y = spawnPoint.y * 64;
@@ -53,6 +53,10 @@ export class EnemyController {
         }
     }
 
+    getEnemy(): Enemy[] {
+        return this.enemies;
+    }
+
     update(deltaTime: number) {
         this.enemies.forEach(enemy => {
             enemy.update(deltaTime);
@@ -62,7 +66,7 @@ export class EnemyController {
             }
 
             if (enemy.getUpdatePositionEnemy()) {
-                console.log(enemy.position);
+                // console.log(enemy.position);
             }
         });
     }
