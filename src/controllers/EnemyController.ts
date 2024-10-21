@@ -3,6 +3,7 @@ import { Enemy } from "../models/Enemy";
 import { ObjectPool } from "../utils/ObjectPool";
 import { EnemyTypes } from "../types/EnemyTypes";
 import { BfsPathfinding } from "../utils/BfsPathfinding";
+import { LevelTypes } from "../types/LevelTypes";
 
 export class EnemyController {
     private static instance: EnemyController;
@@ -14,7 +15,6 @@ export class EnemyController {
     private constructor(map: Container, grid: number[][]) {
         this.map = map;
         this.grid = grid;
-
     }
 
     public static getInstance(map?: Container, grid?: number[][]): EnemyController {
@@ -69,5 +69,55 @@ export class EnemyController {
                 // console.log(enemy.position);
             }
         });
+    }
+
+    spawnEnemyFromLevel(levelData: LevelTypes) {
+        let currentWaveIndex = 0;
+
+        // Hàm spawn đợt (wave)
+        const spawnWave = (waveIndex: number) => {
+            const wave = levelData.waves[waveIndex];
+            let enemiesInWave = 0; // Số lượng enemy trong wave hiện tại
+
+            wave.enemies.forEach((enemyInfo) => {
+                for (let i = 0; i < enemyInfo.count; i++) {
+                    setTimeout(() => {
+                        EnemyController.getInstance().createEnemy(
+                            levelData.objectives.enemyPath[0],
+                            levelData.objectives.defendPoint,
+                            enemyInfo.type
+                        );
+                        enemiesInWave++; // Tăng số lượng enemy trong wave khi spawn
+                    }, wave.spawnInterval * i);
+                }
+            });
+
+            // Kiểm tra khi nào tất cả enemy trong wave này bị tiêu diệt
+            const checkWaveCompletion = () => {
+                if (EnemyController.getInstance().getEnemy().length === 0) {
+                    // Khi tất cả quái bị tiêu diệt
+                    console.log(`Wave ${waveIndex + 1} hoàn thành`);
+
+                    currentWaveIndex++;
+                    if (currentWaveIndex < levelData.waves.length) {
+                        // Thêm khoảng thời gian chờ trước khi spawn wave tiếp theo
+                        setTimeout(() => {
+                            spawnWave(currentWaveIndex);
+                        }, levelData.waveInterval);
+                    } else {
+                        console.log("Tất cả các wave đã hoàn thành");
+                    }
+                } else {
+                    // Tiếp tục kiểm tra nếu vẫn còn quái vật sống
+                    setTimeout(checkWaveCompletion, 1000); // Kiểm tra lại sau 1 giây
+                }
+            };
+
+            // Bắt đầu kiểm tra wave hiện tại
+            setTimeout(checkWaveCompletion, 1000); // Kiểm tra sau khi đợt spawn quái kết thúc
+        };
+
+        // Bắt đầu spawn đợt đầu tiên
+        spawnWave(currentWaveIndex);
     }
 }

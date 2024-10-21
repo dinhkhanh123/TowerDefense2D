@@ -17,12 +17,14 @@ export class Projectile {
         this.type = type;
         this.sprite = sprite;
         this.sprite.scale.set(.6);
-        this.damage = 5;
-        this.speed = 6;
+        this.damage = 0;
+        this.speed = 0;
     }
 
-    setTarget(enemyTarget: Enemy) {
+    setTarget(enemyTarget: Enemy, damage: number, speed: number) {
         this.target = enemyTarget;
+        this.damage = damage;
+        this.speed = speed;
     }
 
     update(deltaTime: number): void {

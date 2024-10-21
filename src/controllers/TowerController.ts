@@ -30,7 +30,7 @@ export class TowerController {
 
     createTower(towerType: TowerType, baseSprite: Sprite) {
         const tower = ObjectPool.instance.getTowerFromPool(towerType);
-
+        console.log(tower);
         baseSprite.removeAllListeners();
         this.map.removeChild(baseSprite);
 
@@ -66,6 +66,15 @@ export class TowerController {
         });
 
         this.map.addChild(slotTowerSprite);
+    }
+
+    upgradeTower(id: number) {
+        const tower = this.towers.find(tower => tower.id === id);
+        if (tower && tower.level < 3) {
+            tower.upgrade();
+        } else {
+            console.error(`Tower with ID ${id} not found. hoac level max`);
+        }
     }
 
     update(deltaTime: number) {

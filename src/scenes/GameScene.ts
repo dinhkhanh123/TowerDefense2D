@@ -19,6 +19,7 @@ export class GameScene extends Container {
     private objectPool: ObjectPool;
     private mapContainer: Container;
     private controlPanel: Container;
+    private displayPannel: Container;
 
     public slotTower!: Sprite;
     private towerRange: Sprite;
@@ -34,13 +35,12 @@ export class GameScene extends Container {
         this.objectPool = new ObjectPool();
         this.mapContainer = new Container();
         this.controlPanel = new Container();
+        this.displayPannel = new Container();
         this.levelManager = new LevelManager(levelId);
         const levelData = this.levelManager.getLevelData();
         this.tileSize = levelData.map.tileSize;
 
         this.towerRange = new Sprite();
-
-
 
         TowerController.getInstance(this.mapContainer);
         ProjectileController.getInstance(this.mapContainer);
@@ -48,7 +48,7 @@ export class GameScene extends Container {
 
 
         this.buildMap(levelData.map.tiles);
-        this.spawnEnemyFromLevel(levelData);
+        EnemyController.getInstance().spawnEnemyFromLevel(levelData);
 
         this.app.ticker.add(time => {
             EnemyController.getInstance().update(time.deltaTime);
@@ -81,10 +81,10 @@ export class GameScene extends Container {
             });
         });
 
-
-
         this.app.stage.addChild(this.mapContainer);
         this.app.stage.addChild(this.controlPanel);
+        this.app.stage.addChild(this.displayPannel);
+
     }
 
     createEmptyTile(x: number, y: number, tileSize: number) {
@@ -94,6 +94,7 @@ export class GameScene extends Container {
         grap.interactive = true;
         grap.on('pointerdown', () => {
             this.controlPanel.visible = false;
+            this.displayPannel.visible = false;
         });
         this.mapContainer.addChild(grap);
     }
@@ -105,6 +106,7 @@ export class GameScene extends Container {
         grap.interactive = true;
         grap.on('pointerdown', () => {
             this.controlPanel.visible = false;
+            this.displayPannel.visible = false;
         });
         this.mapContainer.addChild(grap);
     }
@@ -126,6 +128,7 @@ export class GameScene extends Container {
     }
 
     controlTowerPanel() {
+        this.displayPannel.visible = false;
         this.controlPanel.visible = true;
         const grapbg = new Graphics();
         grapbg.rect(0, 640, 1024, 160);
@@ -150,33 +153,51 @@ export class GameScene extends Container {
     }
 
     displayTowerInfo(tower: Tower) {
-        this.controlPanel.visible = true;
+        this.controlPanel.visible = false;
+        this.displayPannel.visible = true;
 
         this.towerRange.texture = Texture.from('range_tower');
         this.towerRange.anchor.set(0.5);
         this.towerRange.position.set(tower.sprite.x + 32, tower.sprite.y + 32);
         this.towerRange.width = tower.range * 2;
         this.towerRange.height = tower.range * 2;
-        this.controlPanel.addChild(this.towerRange);
+        this.displayPannel.addChild(this.towerRange);
 
 
         const grapbg = new Graphics();
         grapbg.rect(0, 640, 1024, 160);
         grapbg.fill(0x77CDFF);
-        this.controlPanel.addChild(grapbg);
+        this.displayPannel.addChild(grapbg);
 
         // Hiển thị thông tin tháp (ví dụ: loại tháp, mức độ nâng cấp, ...)
-        const infoText = new Text(`Tower: ${tower.name}\nLevel: ${tower.level}`, {
-            fontFamily: 'Arial',
-            fontSize: 24,
-            fill: 0x000000,
-            align: 'center',
-        });
+        const infoText = new Text(`
+            Tower: ${tower.name}
+            Level: ${tower.level}
+            Damage: ${tower.damage}
+            FireRate:${tower.fireRate}\t
+            Cost:${tower.cost}\t
+            Range:${tower.range}`, {
+                fontFamily: 'Arial',
+                fontSize: 16,
+                fill: 0x000000,
+                // align: 'center',
+            });
         infoText.position.set(50, 650);
-        this.controlPanel.addChild(infoText);
+        this.displayPannel.addChild(infoText);
+
+        const upgradeTowerBtn = new Graphics();
+        upgradeTowerBtn.rect(500, 650, 200, 50);
+        upgradeTowerBtn.fill(0xFFBD73);
+        upgradeTowerBtn.interactive = true;
+        upgradeTowerBtn.cursor = 'pointer';
+        upgradeTowerBtn.on('pointerdown', () => {
+            TowerController.getInstance().upgradeTower(tower.id);
+            this.displayTowerInfo(tower);
+        });
+        this.displayPannel.addChild(upgradeTowerBtn);
 
         const removeTowerBtn = new Graphics();
-        removeTowerBtn.rect(50, 720, 200, 50);
+        removeTowerBtn.rect(500, 720, 200, 50);
         removeTowerBtn.fill(0xFFCFB3);
         removeTowerBtn.interactive = true;
         removeTowerBtn.cursor = 'pointer';
@@ -184,7 +205,7 @@ export class GameScene extends Container {
             TowerController.getInstance().removeTower(tower, tower.cost);
             this.towerRange.texture = Texture.EMPTY;
         });
-        this.controlPanel.addChild(removeTowerBtn);
+        this.displayPannel.addChild(removeTowerBtn);
     }
 
     createCardTower(type: TowerType, x: number, y: number): Container {
@@ -202,53 +223,4 @@ export class GameScene extends Container {
         return card;
     }
 
-    private spawnEnemyFromLevel(levelData: LevelTypes) {
-        let currentWaveIndex = 0;
-
-        // Hàm spawn đợt (wave)
-        const spawnWave = (waveIndex: number) => {
-            const wave = levelData.waves[waveIndex];
-            let enemiesInWave = 0; // Số lượng enemy trong wave hiện tại
-
-            wave.enemies.forEach((enemyInfo) => {
-                for (let i = 0; i < enemyInfo.count; i++) {
-                    setTimeout(() => {
-                        EnemyController.getInstance().createEnemy(
-                            levelData.objectives.enemyPath[0],
-                            levelData.objectives.defendPoint,
-                            enemyInfo.type
-                        );
-                        enemiesInWave++; // Tăng số lượng enemy trong wave khi spawn
-                    }, wave.spawnInterval * i);
-                }
-            });
-
-            // Kiểm tra khi nào tất cả enemy trong wave này bị tiêu diệt
-            const checkWaveCompletion = () => {
-                if (EnemyController.getInstance().getEnemy().length === 0) {
-                    // Khi tất cả quái bị tiêu diệt
-                    console.log(`Wave ${waveIndex + 1} hoàn thành`);
-
-                    currentWaveIndex++;
-                    if (currentWaveIndex < levelData.waves.length) {
-                        // Thêm khoảng thời gian chờ trước khi spawn wave tiếp theo
-                        setTimeout(() => {
-                            spawnWave(currentWaveIndex);
-                        }, levelData.waveInterval);
-                    } else {
-                        console.log("Tất cả các wave đã hoàn thành");
-                    }
-                } else {
-                    // Tiếp tục kiểm tra nếu vẫn còn quái vật sống
-                    setTimeout(checkWaveCompletion, 1000); // Kiểm tra lại sau 1 giây
-                }
-            };
-
-            // Bắt đầu kiểm tra wave hiện tại
-            setTimeout(checkWaveCompletion, 1000); // Kiểm tra sau khi đợt spawn quái kết thúc
-        };
-
-        // Bắt đầu spawn đợt đầu tiên
-        spawnWave(currentWaveIndex);
-    }
 }

@@ -54,7 +54,7 @@ export class Tower {
         this.level++;
         this.damage *= 1.2;     // Mỗi lần nâng cấp tăng sát thương 20%
         this.range *= 1.1;      // Phạm vi tăng 10%
-        this.fireRate *= 0.9;   // Tốc độ bắn tăng (giảm thời gian giữa các lần bắn)
+        this.fireRate *= 1.2;   // Tốc độ bắn tăng (giảm thời gian giữa các lần bắn)
         this.cost *= 1.5;       // Chi phí tăng theo cấp độ
     }
 

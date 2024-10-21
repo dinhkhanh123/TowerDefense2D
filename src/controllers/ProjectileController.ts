@@ -33,7 +33,7 @@ export class ProjectileController {
 
         projectile.sprite.anchor.set(0.5);
 
-        projectile.setTarget(enemy);
+        projectile.setTarget(enemy, tower.damage, tower.fireRate);
 
         this.projectiles.push(projectile);
 
