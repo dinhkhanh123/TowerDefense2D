@@ -10,6 +10,8 @@ import AssetLoad from '../utils/AssetLoad';
 import { ObjectPool } from '../utils/ObjectPool';
 import { ProjectileController } from '../controllers/ProjectileController';
 import { LevelTypes } from '../types/LevelTypes';
+import { GameConfig } from '../config/GameConfig';
+import { PlayerController } from '../controllers/PlayerController';
 
 
 export class GameScene extends Container {
@@ -18,15 +20,14 @@ export class GameScene extends Container {
     private levelManager: LevelManager;
     private objectPool: ObjectPool;
     private mapContainer: Container;
-    private controlPanel: Container;
-    private displayPannel: Container;
+    private towerSelectionPannel: Container;
+    private towerInfoPannel: Container;
+    private headsUpDisplay: Container;
 
     public slotTower!: Sprite;
     private towerRange: Sprite;
 
     private tileSize: number;
-
-
 
     constructor(app: Application, levelId: number) {
         super();
@@ -34,8 +35,9 @@ export class GameScene extends Container {
         this.app = app;
         this.objectPool = new ObjectPool();
         this.mapContainer = new Container();
-        this.controlPanel = new Container();
-        this.displayPannel = new Container();
+        this.towerSelectionPannel = new Container();
+        this.towerInfoPannel = new Container();
+        this.headsUpDisplay = new Container();
         this.levelManager = new LevelManager(levelId);
         const levelData = this.levelManager.getLevelData();
         this.tileSize = levelData.map.tileSize;
@@ -45,9 +47,11 @@ export class GameScene extends Container {
         TowerController.getInstance(this.mapContainer);
         ProjectileController.getInstance(this.mapContainer);
         EnemyController.getInstance(this.mapContainer, levelData.map.tiles);
+        PlayerController.getInstance(levelData.id);
 
 
         this.buildMap(levelData.map.tiles);
+        this.updateHUD();
         EnemyController.getInstance().spawnEnemyFromLevel(levelData);
 
         this.app.ticker.add(time => {
@@ -56,7 +60,7 @@ export class GameScene extends Container {
             ProjectileController.getInstance().update(time.deltaTime);
         });
 
-        this.controlPanel.visible = false;
+        this.towerSelectionPannel.visible = false;
     }
 
     private buildMap(tiles: number[][]): void {
@@ -82,9 +86,9 @@ export class GameScene extends Container {
         });
 
         this.app.stage.addChild(this.mapContainer);
-        this.app.stage.addChild(this.controlPanel);
-        this.app.stage.addChild(this.displayPannel);
-
+        this.app.stage.addChild(this.towerSelectionPannel);
+        this.app.stage.addChild(this.towerInfoPannel);
+        this.app.stage.addChild(this.headsUpDisplay);
     }
 
     createEmptyTile(x: number, y: number, tileSize: number) {
@@ -93,8 +97,8 @@ export class GameScene extends Container {
         grap.fill(0x72BF78);
         grap.interactive = true;
         grap.on('pointerdown', () => {
-            this.controlPanel.visible = false;
-            this.displayPannel.visible = false;
+            this.towerSelectionPannel.visible = false;
+            this.towerInfoPannel.visible = false;
         });
         this.mapContainer.addChild(grap);
     }
@@ -105,8 +109,8 @@ export class GameScene extends Container {
         grap.fill(0xF6EFBD);
         grap.interactive = true;
         grap.on('pointerdown', () => {
-            this.controlPanel.visible = false;
-            this.displayPannel.visible = false;
+            this.towerSelectionPannel.visible = false;
+            this.towerInfoPannel.visible = false;
         });
         this.mapContainer.addChild(grap);
     }
@@ -121,19 +125,19 @@ export class GameScene extends Container {
 
         slotTowerSprite.on('pointerdown', () => {
             this.slotTower = slotTowerSprite;
-            this.controlTowerPanel();
+            this.menuTower();
         });
 
         this.mapContainer.addChild(slotTowerSprite);
     }
 
-    controlTowerPanel() {
-        this.displayPannel.visible = false;
-        this.controlPanel.visible = true;
+    menuTower() {
+        this.towerInfoPannel.visible = false;
+        this.towerSelectionPannel.visible = true;
         const grapbg = new Graphics();
         grapbg.rect(0, 640, 1024, 160);
         grapbg.fill(0xFEF9F2);
-        this.controlPanel.addChild(grapbg);
+        this.towerSelectionPannel.addChild(grapbg);
 
         const towerType: TowerType[] = [TowerType.Archer, TowerType.Mage, TowerType.Fire, TowerType.Cannon];
 
@@ -148,26 +152,26 @@ export class GameScene extends Container {
             const cardY = startY;
 
             const card = this.createCardTower(towerType[i], cardX, cardY);
-            this.controlPanel.addChild(card);
+            this.towerSelectionPannel.addChild(card);
         }
     }
 
-    displayTowerInfo(tower: Tower) {
-        this.controlPanel.visible = false;
-        this.displayPannel.visible = true;
+    infoTower(tower: Tower) {
+        this.towerSelectionPannel.visible = false;
+        this.towerInfoPannel.visible = true;
 
         this.towerRange.texture = Texture.from('range_tower');
         this.towerRange.anchor.set(0.5);
         this.towerRange.position.set(tower.sprite.x + 32, tower.sprite.y + 32);
         this.towerRange.width = tower.range * 2;
         this.towerRange.height = tower.range * 2;
-        this.displayPannel.addChild(this.towerRange);
+        this.towerInfoPannel.addChild(this.towerRange);
 
 
         const grapbg = new Graphics();
         grapbg.rect(0, 640, 1024, 160);
         grapbg.fill(0x77CDFF);
-        this.displayPannel.addChild(grapbg);
+        this.towerInfoPannel.addChild(grapbg);
 
         // Hiển thị thông tin tháp (ví dụ: loại tháp, mức độ nâng cấp, ...)
         const infoText = new Text(`
@@ -183,7 +187,7 @@ export class GameScene extends Container {
                 // align: 'center',
             });
         infoText.position.set(50, 650);
-        this.displayPannel.addChild(infoText);
+        this.towerInfoPannel.addChild(infoText);
 
         const upgradeTowerBtn = new Graphics();
         upgradeTowerBtn.rect(500, 650, 200, 50);
@@ -192,9 +196,9 @@ export class GameScene extends Container {
         upgradeTowerBtn.cursor = 'pointer';
         upgradeTowerBtn.on('pointerdown', () => {
             TowerController.getInstance().upgradeTower(tower.id);
-            this.displayTowerInfo(tower);
+            this.infoTower(tower);
         });
-        this.displayPannel.addChild(upgradeTowerBtn);
+        this.towerInfoPannel.addChild(upgradeTowerBtn);
 
         const removeTowerBtn = new Graphics();
         removeTowerBtn.rect(500, 720, 200, 50);
@@ -205,7 +209,7 @@ export class GameScene extends Container {
             TowerController.getInstance().removeTower(tower, tower.cost);
             this.towerRange.texture = Texture.EMPTY;
         });
-        this.displayPannel.addChild(removeTowerBtn);
+        this.towerInfoPannel.addChild(removeTowerBtn);
     }
 
     createCardTower(type: TowerType, x: number, y: number): Container {
@@ -217,10 +221,31 @@ export class GameScene extends Container {
         spriteTower.interactive = true;
         spriteTower.cursor = 'pointer';
         spriteTower.on('pointerdown', () => {
-            TowerController.getInstance().createTower(type, this.slotTower);
+            PlayerController.getInstance().buyTower(type, this.slotTower);
         });
         card.addChild(spriteTower);
         return card;
     }
 
+    updateHUD() {
+        const health = PlayerController.getInstance().getHealth();
+        const money = PlayerController.getInstance().getGold();
+        const wave = PlayerController.getInstance().getWaves();
+        const grapbg = new Graphics();
+        grapbg.rect(20, 5, 150, 50);
+        grapbg.fill(0x77CDFF);
+        this.headsUpDisplay.addChild(grapbg);
+
+        const infoText = new Text(`
+            Health: ${health} Money: ${money}
+            Wave: ${wave}`,
+            {
+                fontFamily: 'Arial',
+                fontSize: 12,
+                fill: 0x000000,
+                // align: 'center',
+            });
+        infoText.position.set(0, 0);
+        this.headsUpDisplay.addChild(infoText);
+    }
 }

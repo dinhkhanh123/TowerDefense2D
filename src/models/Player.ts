@@ -1,20 +1,23 @@
 import { Hero } from "./Hero";
 
 export class Player {
-    id: string;            // ID của người chơi
+    id: number;            // ID của người chơi
     name: string;          // Tên người chơi
     level: number;         // Cấp độ người chơi
     experience: number;    // Điểm kinh nghiệm hiện tại
     heroes: Hero[];        // Danh sách các hero mà người chơi sở hữu
-    resources: number;     // Tài nguyên mà người chơi có (ví dụ: vàng, năng lượng)
-
-    constructor(id: string, name: string, level: number, experience: number, resources: number) {
+    coin: number;   // Tài nguyên mà người chơi có (ví dụ: vàng, năng lượng)
+    health: number;
+    wave: number;
+    constructor(id: number, name: string, coin: number, health: number, wave: number) {
         this.id = id;
         this.name = name;
-        this.level = level;
-        this.experience = experience;
+        this.level = 1;
+        this.experience = 0;
         this.heroes = [];
-        this.resources = resources;
+        this.coin = coin;
+        this.health = health;
+        this.wave = wave;
     }
 
     // Thêm hero vào danh sách của người chơi
@@ -23,12 +26,12 @@ export class Player {
     }
 
     // Tăng điểm kinh nghiệm và lên cấp khi đạt đủ điều kiện
-    gainExperience(exp: number): void {
-        this.experience += exp;
-        if (this.experience >= this.level * 100) { // Ví dụ: cần 100 kinh nghiệm để lên mỗi cấp
-            this.levelUp();
-        }
-    }
+    // gainExperience(exp: number): void {
+    //     this.experience += exp;
+    //     if (this.experience >= this.level * 100) { // Ví dụ: cần 100 kinh nghiệm để lên mỗi cấp
+    //         this.levelUp();
+    //     }
+    // }
 
     // Tăng cấp độ cho người chơi
     private levelUp(): void {
@@ -39,13 +42,13 @@ export class Player {
 
     // Kiểm tra tài nguyên của người chơi
     hasEnoughResources(amount: number): boolean {
-        return this.resources >= amount;
+        return this.coin >= amount;
     }
 
     // Tiêu thụ tài nguyên
     consumeResources(amount: number): boolean {
         if (this.hasEnoughResources(amount)) {
-            this.resources -= amount;
+            this.coin -= amount;
             return true;
         }
         return false;

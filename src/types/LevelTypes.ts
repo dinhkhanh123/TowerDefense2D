@@ -17,7 +17,7 @@ export interface LevelTypes {
     towersAvailable: Array<{ type: string; count: number }>;
     resources: {
         gold: number;
-        mana: number;
+        health: number;
     };
     objectives: {
         defendPoint: { x: number; y: number };

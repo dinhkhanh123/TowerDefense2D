@@ -45,6 +45,14 @@ export class Tower {
 
     }
 
+    reset(level: number, damage: number, range: number, fireRange: number, cost: number) {
+        this.level = level;
+        this.damage = damage;
+        this.range = range;
+        this.fireRate = fireRange;
+        this.cost = cost;
+    }
+
     setTarget(target: Enemy) {
         this.target = target;
     }

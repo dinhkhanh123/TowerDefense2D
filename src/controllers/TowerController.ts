@@ -5,6 +5,7 @@ import { ObjectPool } from "../utils/ObjectPool";
 import AssetLoad from "../utils/AssetLoad";
 import { GameScene } from "../scenes/GameScene";
 import { EnemyController } from "./EnemyController";
+import { towersData } from "../data/towers";
 
 export class TowerController {
     private static instance: TowerController;
@@ -30,7 +31,12 @@ export class TowerController {
 
     createTower(towerType: TowerType, baseSprite: Sprite) {
         const tower = ObjectPool.instance.getTowerFromPool(towerType);
-        console.log(tower);
+        const towerData = towersData.find(t => t.name === towerType);
+
+        if (towerData) {
+            tower.reset(towerData.level, towerData.damage, towerData.range, towerData.fireRate, towerData.cost);
+        }
+
         baseSprite.removeAllListeners();
         this.map.removeChild(baseSprite);
 
@@ -39,7 +45,7 @@ export class TowerController {
         tower.sprite.interactive = true;
         tower.sprite.cursor = 'pointer';
         tower.sprite.on('pointerdown', () => {
-            GameScene.instance.displayTowerInfo(tower);
+            GameScene.instance.infoTower(tower);
         });
         this.towers.push(tower);
         this.map.addChild(tower.sprite);
@@ -62,7 +68,7 @@ export class TowerController {
 
         slotTowerSprite.on('pointerdown', () => {
             GameScene.instance.slotTower = slotTowerSprite;
-            GameScene.instance.controlTowerPanel();
+            GameScene.instance.menuTower();
         });
 
         this.map.addChild(slotTowerSprite);
