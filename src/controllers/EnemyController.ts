@@ -31,8 +31,8 @@ export class EnemyController {
     public createEnemy(spawnPoint: { x: number, y: number }, goal: { x: number, y: number }, enemyType: string) {
         const enemy = ObjectPool.instance.getEnemyFromPool(enemyType);
 
-        enemy.sprite.x = spawnPoint.x * 64;
-        enemy.sprite.y = spawnPoint.y * 64;
+        enemy.sprite.x = spawnPoint.x * 64 + 32;
+        enemy.sprite.y = spawnPoint.y * 64 + 32;
 
         const pathfinding = new BfsPathfinding(this.grid);
 
@@ -61,7 +61,7 @@ export class EnemyController {
         this.enemies.forEach(enemy => {
             enemy.update(deltaTime);
 
-            if (enemy.hasReachedGoal()) {
+            if (!enemy.isAlive || enemy.hasReachedGoal()) {
                 this.removeEnemy(enemy);
             }
 

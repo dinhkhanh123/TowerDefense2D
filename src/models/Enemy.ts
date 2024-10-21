@@ -35,7 +35,7 @@ export class Enemy {
         this.isAlive = true;
 
         const sprite = new Sprite(Texture.from('enemy1'));
-
+        sprite.anchor.set(0.5);
         this.sprite.addChild(sprite);
     }
 
@@ -43,6 +43,8 @@ export class Enemy {
         this.currentPosition = { x: pointStart.x, y: pointStart.y };
         this.goalPosition = { x: pointEnd.x, y: pointEnd.y };
         this.pathfinding = path;
+        this.currentPathIndex = 0;
+        this.isAlive = true;
     }
 
     takeDamage(id: number, damage: number) {
@@ -64,8 +66,11 @@ export class Enemy {
         if (path && this.currentPathIndex < path.length) {
 
             const target = path[this.currentPathIndex];
-            const dx = target.x * 64 - this.sprite.x;
-            const dy = target.y * 64 - this.sprite.y;
+            const tileCenterX = (target.x * 64) + (64 / 2); // Thêm 64/2 để vào giữa ô
+            const tileCenterY = (target.y * 64) + (64 / 2); // Thêm 64/2 để vào giữa ô
+
+            const dx = tileCenterX - this.sprite.x;
+            const dy = tileCenterY - this.sprite.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
 
             if (dist > 1) {
@@ -83,8 +88,8 @@ export class Enemy {
     }
 
     hasReachedGoal(): boolean {
-        const dx = this.goalPosition.x * 64 - this.sprite.x;
-        const dy = this.goalPosition.y * 64 - this.sprite.y;
+        const dx = this.goalPosition.x * 64 + 32 - this.sprite.x;
+        const dy = this.goalPosition.y * 64 + 32 - this.sprite.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         return distance < 1;

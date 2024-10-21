@@ -9,6 +9,7 @@ import { TowerType } from '../types/TowerType';
 import AssetLoad from '../utils/AssetLoad';
 import { ObjectPool } from '../utils/ObjectPool';
 import { ProjectileController } from '../controllers/ProjectileController';
+import { LevelTypes } from '../types/LevelTypes';
 
 
 export class GameScene extends Container {
@@ -47,7 +48,7 @@ export class GameScene extends Container {
 
 
         this.buildMap(levelData.map.tiles);
-        this.spawnEnemy(levelData.objectives.enemyPath[0], levelData.objectives.defendPoint, EnemyTypes.Grunt);
+        this.spawnEnemyFromLevel(levelData);
 
         this.app.ticker.add(time => {
             EnemyController.getInstance().update(time.deltaTime);
@@ -57,11 +58,6 @@ export class GameScene extends Container {
 
         this.controlPanel.visible = false;
     }
-
-    private spawnEnemy(startPoint: { x: number, y: number }, targetPoint: { x: number, y: number }, enemyType: string) {
-        EnemyController.getInstance().createEnemy(startPoint, targetPoint, enemyType);
-    }
-
 
     private buildMap(tiles: number[][]): void {
         tiles.forEach((row, rowIndex) => {
@@ -191,8 +187,6 @@ export class GameScene extends Container {
         this.controlPanel.addChild(removeTowerBtn);
     }
 
-
-
     createCardTower(type: TowerType, x: number, y: number): Container {
         const card = new Container();
         const spriteTower = new Sprite(AssetLoad.getTexture('Archer_01'));
@@ -206,5 +200,55 @@ export class GameScene extends Container {
         });
         card.addChild(spriteTower);
         return card;
+    }
+
+    private spawnEnemyFromLevel(levelData: LevelTypes) {
+        let currentWaveIndex = 0;
+
+        // Hàm spawn đợt (wave)
+        const spawnWave = (waveIndex: number) => {
+            const wave = levelData.waves[waveIndex];
+            let enemiesInWave = 0; // Số lượng enemy trong wave hiện tại
+
+            wave.enemies.forEach((enemyInfo) => {
+                for (let i = 0; i < enemyInfo.count; i++) {
+                    setTimeout(() => {
+                        EnemyController.getInstance().createEnemy(
+                            levelData.objectives.enemyPath[0],
+                            levelData.objectives.defendPoint,
+                            enemyInfo.type
+                        );
+                        enemiesInWave++; // Tăng số lượng enemy trong wave khi spawn
+                    }, wave.spawnInterval * i);
+                }
+            });
+
+            // Kiểm tra khi nào tất cả enemy trong wave này bị tiêu diệt
+            const checkWaveCompletion = () => {
+                if (EnemyController.getInstance().getEnemy().length === 0) {
+                    // Khi tất cả quái bị tiêu diệt
+                    console.log(`Wave ${waveIndex + 1} hoàn thành`);
+
+                    currentWaveIndex++;
+                    if (currentWaveIndex < levelData.waves.length) {
+                        // Thêm khoảng thời gian chờ trước khi spawn wave tiếp theo
+                        setTimeout(() => {
+                            spawnWave(currentWaveIndex);
+                        }, levelData.waveInterval);
+                    } else {
+                        console.log("Tất cả các wave đã hoàn thành");
+                    }
+                } else {
+                    // Tiếp tục kiểm tra nếu vẫn còn quái vật sống
+                    setTimeout(checkWaveCompletion, 1000); // Kiểm tra lại sau 1 giây
+                }
+            };
+
+            // Bắt đầu kiểm tra wave hiện tại
+            setTimeout(checkWaveCompletion, 1000); // Kiểm tra sau khi đợt spawn quái kết thúc
+        };
+
+        // Bắt đầu spawn đợt đầu tiên
+        spawnWave(currentWaveIndex);
     }
 }

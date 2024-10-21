@@ -16,9 +16,9 @@ export class Projectile {
         this.id = id;
         this.type = type;
         this.sprite = sprite;
-        this.sprite.scale.set(.8);
+        this.sprite.scale.set(.6);
         this.damage = 5;
-        this.speed = 5;
+        this.speed = 6;
     }
 
     setTarget(enemyTarget: Enemy) {
@@ -27,8 +27,8 @@ export class Projectile {
 
     update(deltaTime: number): void {
         this.target.getUpdatePositionEnemy();
-        const dx = this.target.sprite.x + 10 - this.sprite.x;
-        const dy = this.target.sprite.y + 20 - this.sprite.y;
+        const dx = this.target.sprite.x - this.sprite.x;
+        const dy = this.target.sprite.y - this.sprite.y;
 
         const distance = Math.sqrt(dx * dx + dy * dy);
 

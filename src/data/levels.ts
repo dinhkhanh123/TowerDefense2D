@@ -23,7 +23,7 @@ export const levels = [
         waves: [
             {
                 enemies: [
-                    { type: 'Grunt', count: 5 },
+                    { type: 'Grunt', count: 2 },
                     { type: 'Monster', count: 3 }
                 ],
                 spawnInterval: 1000 // Thời gian xuất hiện kẻ địch (ms)
@@ -31,11 +31,12 @@ export const levels = [
             {
                 enemies: [
                     { type: 'Grunt', count: 2 },
-                    { type: 'Monster', count: 5 }
+                    { type: 'Monster', count: 3 }
                 ],
                 spawnInterval: 1500
-            }
+            },
         ],
+        waveInterval: 3000,
         towersAvailable: [
             { type: 'archer', count: 3 },
             { type: 'cannon', count: 2 }

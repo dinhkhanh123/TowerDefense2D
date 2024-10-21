@@ -5,7 +5,7 @@ export const enemiesData: Enemy[] = [
     new Enemy(
         1,
         "Grunt",
-        100,    // HP
+        20,    // HP
         1,    // Speed
         10,     // Damage
         50
@@ -13,7 +13,7 @@ export const enemiesData: Enemy[] = [
     new Enemy(
         2,
         "Monster",
-        200,    // HP
+        30,    // HP
         1.5,    // Speed
         20,     // Damage
         100
@@ -22,7 +22,7 @@ export const enemiesData: Enemy[] = [
     new Enemy(
         3,
         "Giant",
-        300,    // HP
+        50,    // HP
         1.0,    // Speed
         30,     // Damage
         150
@@ -31,7 +31,7 @@ export const enemiesData: Enemy[] = [
     new Enemy(
         4,
         "Speedster",
-        500,    // HP
+        50,    // HP
         0.8,    // Speed
         50,     // Damage
         300
@@ -39,7 +39,7 @@ export const enemiesData: Enemy[] = [
     new Enemy(
         5,
         "Boss",
-        500,    // HP
+        50,    // HP
         0.8,    // Speed
         50,     // Damage
         300

@@ -13,6 +13,7 @@ export interface LevelTypes {
         enemies: Array<{ type: string; count: number }>;
         spawnInterval: number;
     }>;
+    waveInterval: number;
     towersAvailable: Array<{ type: string; count: number }>;
     resources: {
         gold: number;
