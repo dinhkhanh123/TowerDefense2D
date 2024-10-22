@@ -6,24 +6,16 @@ import { Enemy } from "../models/Enemy";
 import { ObjectPool } from "../utils/ObjectPool";
 
 export class ProjectileController {
-    private static instance: ProjectileController;
+    public static instance: ProjectileController;
     private map: Container;
     private projectiles: Projectile[] = [];
     private target!: Enemy;
 
     constructor(map: Container) {
+        ProjectileController.instance = this;
         this.map = map;
     }
 
-    public static getInstance(map?: Container): ProjectileController {
-        if (!ProjectileController.instance) {
-            if (map) {
-                ProjectileController.instance = new ProjectileController(map);
-            }
-
-        }
-        return ProjectileController.instance;
-    }
 
     createProjectile(tower: Tower, enemy: Enemy) {
         const projectile = ObjectPool.instance.getProjectileFromPool(tower.name);

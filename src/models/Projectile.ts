@@ -46,6 +46,6 @@ export class Projectile {
     // Gây sát thương khi va chạm
     hit(): void {
         this.target.takeDamage(this.target.id, this.damage)
-        ProjectileController.getInstance().removeProjectile(this.type, this);
+        ProjectileController.instance.removeProjectile(this.type, this);
     }
 }

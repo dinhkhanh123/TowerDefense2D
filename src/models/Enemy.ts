@@ -55,7 +55,7 @@ export class Enemy {
                 this.hp = 0;
                 this.isAlive = false;
 
-                EnemyController.getInstance().removeEnemy(this);
+                EnemyController.instance.removeEnemy(this);
             }
         }
     }

@@ -4,27 +4,19 @@ import { ObjectPool } from "../utils/ObjectPool";
 import { EnemyTypes } from "../types/EnemyTypes";
 import { BfsPathfinding } from "../utils/BfsPathfinding";
 import { LevelTypes } from "../types/LevelTypes";
+import { PlayerController } from "./PlayerController";
 
 export class EnemyController {
-    private static instance: EnemyController;
+    public static instance: EnemyController;
     private map: Container;
     private enemies: Enemy[] = [];
 
     private grid: number[][];
 
-    private constructor(map: Container, grid: number[][]) {
+    constructor(map: Container, grid: number[][]) {
+        EnemyController.instance = this;
         this.map = map;
         this.grid = grid;
-    }
-
-    public static getInstance(map?: Container, grid?: number[][]): EnemyController {
-        if (!EnemyController.instance) {
-            if (map && grid) {
-                EnemyController.instance = new EnemyController(map, grid);
-            }
-
-        }
-        return EnemyController.instance;
     }
 
     // Tạo enemy mới dựa trên vị trí spawnPoint và mục tiêu
@@ -65,8 +57,8 @@ export class EnemyController {
                 this.removeEnemy(enemy);
             }
 
-            if (enemy.getUpdatePositionEnemy()) {
-                // console.log(enemy.position);
+            if (enemy.hasReachedGoal()) {
+                PlayerController.instance.takeDamage(enemy.damage);
             }
         });
     }
@@ -82,7 +74,7 @@ export class EnemyController {
             wave.enemies.forEach((enemyInfo) => {
                 for (let i = 0; i < enemyInfo.count; i++) {
                     setTimeout(() => {
-                        EnemyController.getInstance().createEnemy(
+                        EnemyController.instance.createEnemy(
                             levelData.objectives.enemyPath[0],
                             levelData.objectives.defendPoint,
                             enemyInfo.type
@@ -94,7 +86,7 @@ export class EnemyController {
 
             // Kiểm tra khi nào tất cả enemy trong wave này bị tiêu diệt
             const checkWaveCompletion = () => {
-                if (EnemyController.getInstance().getEnemy().length === 0) {
+                if (EnemyController.instance.getEnemy().length === 0) {
                     // Khi tất cả quái bị tiêu diệt
                     console.log(`Wave ${waveIndex + 1} hoàn thành`);
 

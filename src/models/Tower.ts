@@ -76,7 +76,7 @@ export class Tower {
 
         this.attackTime += deltaTime;
         if (this.attackTime >= this.cooldownTime) {
-            ProjectileController.getInstance().createProjectile(this, this.target);
+            ProjectileController.instance.createProjectile(this, this.target);
             this.attackTime = 0;
         }
     }

@@ -37,12 +37,17 @@ export class Player {
     private levelUp(): void {
         this.level += 1;
         this.experience = 0;
-        console.log(`${this.name} đã lên cấp ${this.level}!`);
+        // console.log(`${this.name} đã lên cấp ${this.level}!`);
     }
 
     // Kiểm tra tài nguyên của người chơi
     hasEnoughResources(amount: number): boolean {
         return this.coin >= amount;
+    }
+
+    // Them tai nguyen
+    addResources(amount: number) {
+        this.coin += amount;
     }
 
     // Tiêu thụ tài nguyên
@@ -52,5 +57,13 @@ export class Player {
             return true;
         }
         return false;
+    }
+
+    takeDamage(amount: number) {
+        this.health -= amount;
+        if (this.health <= 0) {
+            this.health = 0;
+            console.log("Game Over");
+        }
     }
 }
