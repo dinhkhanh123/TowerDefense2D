@@ -8,7 +8,7 @@ export const levels = [
         map: {
             tiles: [
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // Hàng 1
-                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0], // Hàng 2
+                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // Hàng 2
                 [0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 1, 0, 0], // Hàng 3
                 [0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 1, 0, 0], // Hàng 4
                 [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0], // Hàng 5
@@ -26,17 +26,20 @@ export const levels = [
                     { type: 'Grunt', count: 2 },
                     { type: 'Monster', count: 3 }
                 ],
-                spawnInterval: 1000 // Thời gian xuất hiện kẻ địch (ms)
+                spawnPoints: [{ x: 0, y: 1 }],
+                defendPoint: { x: 13, y: 9 },
             },
             {
                 enemies: [
                     { type: 'Grunt', count: 2 },
                     { type: 'Monster', count: 3 }
                 ],
-                spawnInterval: 1500
+                spawnPoints: [{ x: 0, y: 1 }, { x: 15, y: 1 }],
+                defendPoint: { x: 13, y: 9 },
             },
         ],
-        waveInterval: 3000,
+        spawnInterval: 200,
+        waveInterval: 500,
         towersAvailable: [
             { type: 'archer', count: 3 },
             { type: 'cannon', count: 2 }
@@ -44,13 +47,6 @@ export const levels = [
         resources: {
             gold: 500,
             health: 10
-        },
-        objectives: {
-            defendPoint: { x: 13, y: 9 },  // Điểm mà bạn phải bảo vệ
-            enemyPath: [
-                { x: 0, y: 1 },
-                { x: 13, y: 9 }
-            ]
         }
     },
     // Các level khác sẽ được thêm vào đây.

@@ -9,9 +9,17 @@ import { PlayerController } from "./PlayerController";
 export class EnemyController {
     public static instance: EnemyController;
     private map: Container;
+    private grid: number[][];
     private enemies: Enemy[] = [];
 
-    private grid: number[][];
+    private levelData!: LevelTypes;
+    private isSpawningWave: boolean = false;
+    private currentWaveIndex: number = 0;
+    private spawnTimer: number = 0;
+    private wavePauseTimer: number = 0;
+
+    private enemiesToSpawn: { type: string, count: number }[] = [];
+    private currentEnemyIndex: number = 0;
 
     constructor(map: Container, grid: number[][]) {
         EnemyController.instance = this;
@@ -61,55 +69,77 @@ export class EnemyController {
                 PlayerController.instance.takeDamage(enemy.damage);
             }
         });
+
+        this.updateWaveSpawning(deltaTime);
+    }
+
+    updateWaveSpawning(deltaTime: number) {
+        if (!this.isSpawningWave) {
+            return;
+        }
+
+        const currentWave = this.levelData.waves[this.currentWaveIndex];
+        this.spawnTimer += deltaTime;
+
+        if (this.enemiesToSpawn.length === 0) {
+            // Tạo danh sách enemy để spawn ngẫu nhiên dựa trên wave data
+            currentWave.enemies.forEach(enemyInfo => {
+                for (let i = 0; i < enemyInfo.count; i++) {
+                    this.enemiesToSpawn.push({ type: enemyInfo.type, count: 1 });
+                }
+            });
+            this.enemiesToSpawn = this.shuffleArray(this.enemiesToSpawn);  // Xáo trộn thứ tự enemy
+        }
+
+        if (this.currentEnemyIndex < this.enemiesToSpawn.length) {
+            // Kiểm tra nếu spawnTimer đã vượt qua spawnInterval
+            if (this.spawnTimer >= this.levelData.spawnInterval) {
+                // Lựa chọn ngẫu nhiên một vị trí spawn từ danh sách spawnPositions của wave
+                const randomSpawnPosition = currentWave.spawnPoints[
+                    Math.floor(Math.random() * currentWave.spawnPoints.length)
+                ];
+                const enemyInfo = this.enemiesToSpawn[this.currentEnemyIndex];
+
+                // Spawn enemy tại vị trí spawn ngẫu nhiên đã chọn
+                EnemyController.instance.createEnemy(
+                    randomSpawnPosition,  // Spawn tại vị trí ngẫu nhiên
+                    currentWave.defendPoint,
+                    enemyInfo.type
+                );
+
+                this.spawnTimer = 0;  // Reset lại timer sau mỗi lần spawn
+                this.currentEnemyIndex++;  // Tăng index để spawn enemy tiếp theo
+            }
+        } else if (this.wavePauseTimer >= this.levelData.waveInterval) {
+            // Khi tất cả enemy trong wave đã spawn xong, bắt đầu đợt mới sau waveInterval
+            this.currentWaveIndex++;
+            this.enemiesToSpawn = [];
+            this.currentEnemyIndex = 0;
+            this.wavePauseTimer = 0;
+
+            if (this.currentWaveIndex >= this.levelData.waves.length) {
+                this.isSpawningWave = false;  // Kết thúc tất cả các đợt
+            }
+        } else {
+            this.wavePauseTimer += deltaTime;
+        }
     }
 
     spawnEnemyFromLevel(levelData: LevelTypes) {
-        let currentWaveIndex = 0;
+        this.levelData = levelData;
+        this.isSpawningWave = true;
+        this.currentWaveIndex = 0;
+        this.enemiesToSpawn = [];
+        this.currentEnemyIndex = 0;
+        this.spawnTimer = 0;
+        this.wavePauseTimer = 0;
+    }
 
-        // Hàm spawn đợt (wave)
-        const spawnWave = (waveIndex: number) => {
-            const wave = levelData.waves[waveIndex];
-            let enemiesInWave = 0; // Số lượng enemy trong wave hiện tại
-
-            wave.enemies.forEach((enemyInfo) => {
-                for (let i = 0; i < enemyInfo.count; i++) {
-                    setTimeout(() => {
-                        EnemyController.instance.createEnemy(
-                            levelData.objectives.enemyPath[0],
-                            levelData.objectives.defendPoint,
-                            enemyInfo.type
-                        );
-                        enemiesInWave++; // Tăng số lượng enemy trong wave khi spawn
-                    }, wave.spawnInterval * i);
-                }
-            });
-
-            // Kiểm tra khi nào tất cả enemy trong wave này bị tiêu diệt
-            const checkWaveCompletion = () => {
-                if (EnemyController.instance.getEnemy().length === 0) {
-                    // Khi tất cả quái bị tiêu diệt
-                    console.log(`Wave ${waveIndex + 1} hoàn thành`);
-
-                    currentWaveIndex++;
-                    if (currentWaveIndex < levelData.waves.length) {
-                        // Thêm khoảng thời gian chờ trước khi spawn wave tiếp theo
-                        setTimeout(() => {
-                            spawnWave(currentWaveIndex);
-                        }, levelData.waveInterval);
-                    } else {
-                        console.log("Tất cả các wave đã hoàn thành");
-                    }
-                } else {
-                    // Tiếp tục kiểm tra nếu vẫn còn quái vật sống
-                    setTimeout(checkWaveCompletion, 1000); // Kiểm tra lại sau 1 giây
-                }
-            };
-
-            // Bắt đầu kiểm tra wave hiện tại
-            setTimeout(checkWaveCompletion, 1000); // Kiểm tra sau khi đợt spawn quái kết thúc
-        };
-
-        // Bắt đầu spawn đợt đầu tiên
-        spawnWave(currentWaveIndex);
+    private shuffleArray(array: any[]) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
     }
 }

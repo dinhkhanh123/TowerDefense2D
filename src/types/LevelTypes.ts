@@ -11,16 +11,14 @@ export interface LevelTypes {
     };
     waves: Array<{
         enemies: Array<{ type: string; count: number }>;
-        spawnInterval: number;
+        spawnPoints: Array<{ x: number, y: number }>;
+        defendPoint: { x: number; y: number };
     }>;
+    spawnInterval: number;
     waveInterval: number;
     towersAvailable: Array<{ type: string; count: number }>;
     resources: {
         gold: number;
         health: number;
-    };
-    objectives: {
-        defendPoint: { x: number; y: number };
-        enemyPath: Array<{ x: number; y: number }>;
     };
 }
