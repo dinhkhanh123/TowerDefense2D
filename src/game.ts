@@ -28,7 +28,10 @@ export class Game {
     // Chuyển đổi sang scene GameScene
     loadGameScene(): void {
         this.cleanUpCurrentScene();
-        this.currentScene = new GameScene(this.app, 1);
+        this.currentScene = new GameScene(1);
+        this.app.ticker.add(time => {
+            this.currentScene.update(time.deltaTime);
+        });
         this.currentScene.start();
     }
 

@@ -11,6 +11,7 @@ export class TowerSelectionPannel extends Container {
     constructor() {
         super();
         TowerSelectionPannel.instance = this;
+        this.visible = false;
     }
 
     menuTower() {

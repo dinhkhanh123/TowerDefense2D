@@ -1,3 +1,4 @@
+import { EventHandle } from "../utils/EventHandle";
 import { Hero } from "./Hero";
 
 export class Player {
@@ -64,6 +65,7 @@ export class Player {
         if (this.health <= 0) {
             this.health = 0;
             console.log("Game Over");
+            EventHandle.emit('gameResult', false);
         }
     }
 }

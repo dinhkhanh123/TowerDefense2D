@@ -5,6 +5,7 @@ import { EnemyTypes } from "../types/EnemyTypes";
 import { BfsPathfinding } from "../utils/BfsPathfinding";
 import { LevelTypes } from "../types/LevelTypes";
 import { PlayerController } from "./PlayerController";
+import { EventHandle } from "../utils/EventHandle";
 
 export class EnemyController {
     public static instance: EnemyController;
@@ -119,6 +120,7 @@ export class EnemyController {
 
             if (this.currentWaveIndex >= this.levelData.waves.length) {
                 this.isSpawningWave = false;  // Kết thúc tất cả các đợt
+                this.checkAllEnemiesDefeated();
             }
         } else {
             this.wavePauseTimer += deltaTime;
@@ -133,6 +135,13 @@ export class EnemyController {
         this.currentEnemyIndex = 0;
         this.spawnTimer = 0;
         this.wavePauseTimer = 0;
+    }
+
+    private checkAllEnemiesDefeated() {
+        // Kiểm tra nếu không còn enemy nào và đã spawn hết
+        if (this.enemies.length === 0 && this.currentWaveIndex >= this.levelData.waves.length) {
+            EventHandle.emit('gameResult', true);
+        }
     }
 
     private shuffleArray(array: any[]) {

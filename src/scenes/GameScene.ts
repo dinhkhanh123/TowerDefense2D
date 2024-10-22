@@ -15,11 +15,12 @@ import { PlayerController } from '../controllers/PlayerController';
 import { HUD } from './HUD';
 import { TowerInfoPannel } from './TowerInfoPannel';
 import { TowerSelectionPannel } from './TowerSelectionPannel';
+import { MapBuilder } from './MapBuilder';
+import { ResultPannel } from './ResultPannel';
 
 
 export class GameScene extends Container {
     public static instance: GameScene;
-    private app: Application;
     private levelManager: LevelManager;
     private objectPool: ObjectPool;
     private mapContainer: Container;
@@ -29,14 +30,15 @@ export class GameScene extends Container {
     private projectileController: ProjectileController;
     private enemyController: EnemyController;
     private playerController: PlayerController;
+    private mapBuilder: MapBuilder;
     private headsUpDisplay: HUD;
 
-    constructor(app: Application, levelId: number) {
+    constructor(levelId: number) {
         super();
         GameScene.instance = this;
-        this.app = app;
         this.objectPool = new ObjectPool();
         this.mapContainer = new Container();
+        this.addChild(this.mapContainer);
 
         this.levelManager = new LevelManager(levelId);
         const levelData = this.levelManager.getLevelData();
@@ -45,95 +47,45 @@ export class GameScene extends Container {
         this.projectileController = new ProjectileController(this.mapContainer);
         this.enemyController = new EnemyController(this.mapContainer, levelData.map.tiles);
         this.playerController = new PlayerController(levelData.id);
+
+
         this.headsUpDisplay = new HUD();
         this.addChild(this.headsUpDisplay);
-
-
         this.towerSelectionPannel = new TowerSelectionPannel();
         this.addChild(this.towerSelectionPannel);
         this.towerInfoPannel = new TowerInfoPannel();
         this.addChild(this.towerInfoPannel)
-
-
-        this.buildMap(levelData.map.tiles);
+        this.mapBuilder = new MapBuilder(this.mapContainer);
+        this.mapBuilder.buildMap(levelData.map.tiles);
 
         this.enemyController.spawnEnemyFromLevel(levelData);
 
-        this.app.ticker.add(time => {
-            this.enemyController.update(time.deltaTime);
-            this.towerController.update(time.deltaTime);
-            this.projectileController.update(time.deltaTime);
-        });
+        EventHandle.on('gameResult', (isWin) => { this.showResult(isWin) });
 
-        this.towerSelectionPannel.visible = false;
     }
 
-    private buildMap(tiles: number[][]): void {
-        tiles.forEach((row, rowIndex) => {
-            row.forEach((tile, colIndex) => {
-                const x = colIndex * 64;
-                const y = rowIndex * 64;
-                switch (tile) {
-                    case 0:
-                        this.createEmptyTile(x, y);
-                        break;
-                    case 1:
-                        this.createPathTile(x, y);
-                        break;
-                    case 2:
-                        this.createTowerTile(x, y);
-                        break;
-                    default:
-                        console.error(`Invalid tile value at [${rowIndex}, ${colIndex}]: ${tile}`);
-                        break;
-                }
-            });
-        });
-
-        this.app.stage.addChild(this.mapContainer);
-        this.app.stage.addChild(this.towerSelectionPannel);
-        this.app.stage.addChild(this.towerInfoPannel);
-        this.app.stage.addChild(this.headsUpDisplay);
+    showResult(isWin: boolean): void {
+        const resultPannel = new ResultPannel(isWin);
+        this.addChild(resultPannel);
     }
 
-    createEmptyTile(x: number, y: number) {
-        const grap = new Graphics();
-        grap.rect(x, y, 64, 64);
-        grap.fill(0x72BF78);
-        grap.interactive = true;
-        grap.on('pointerdown', () => {
-            this.towerSelectionPannel.visible = false;
-            this.towerInfoPannel.visible = false;
-        });
-        this.mapContainer.addChild(grap);
+    private retryGame(): void {
+        // Logic để chơi lại game
+        console.log('Restarting game...');
+        this.removeChild(GameScene.instance);
+        // Khởi động lại GameScene
     }
 
-    createPathTile(x: number, y: number) {
-        const grap = new Graphics();
-        grap.rect(x, y, 64, 64);
-        grap.fill(0xF6EFBD);
-        grap.interactive = true;
-        grap.on('pointerdown', () => {
-            this.towerSelectionPannel.visible = false;
-            this.towerInfoPannel.visible = false;
-        });
-        this.mapContainer.addChild(grap);
+    private exitGame(): void {
+        // Logic để thoát game
+        console.log('Exiting to main menu...');
+        this.removeChild(GameScene.instance);
+        // Quay về MainMenuScene
     }
 
-    createTowerTile(x: number, y: number) {
-        const slotTowerSprite = new Sprite(Texture.from('slot_tower'));
-
-        slotTowerSprite.position.set(x, y);
-        slotTowerSprite.interactive = true;
-        slotTowerSprite.eventMode = 'static';
-        slotTowerSprite.cursor = 'pointer';
-
-        slotTowerSprite.on('pointerdown', () => {
-            this.towerSelectionPannel.slotTower = slotTowerSprite;
-            this.towerSelectionPannel.menuTower();
-        });
-
-        this.mapContainer.addChild(slotTowerSprite);
+    update(deltaTime: number) {
+        this.enemyController.update(deltaTime);
+        this.towerController.update(deltaTime);
+        this.projectileController.update(deltaTime);
     }
-
 }
