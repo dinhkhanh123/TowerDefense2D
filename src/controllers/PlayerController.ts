@@ -6,7 +6,7 @@ import { towersData } from "../data/towers";
 import { TowerController } from "./TowerController";
 import { GameScene } from "../scenes/GameScene";
 import { Tower } from "../models/Tower";
-import { HUD } from "../scenes/HUD";
+import { HUD } from "../scenes/GameScenesHelpers/HUD";
 
 export class PlayerController {
     public static instance: PlayerController;
@@ -27,7 +27,6 @@ export class PlayerController {
         if (tower && this.player.coin >= tower.cost) {
             TowerController.instance.createTower(towerType, baseSprite);
             this.consumeGold(tower.cost);
-            HUD.instance.updateHUD();
         } else {
             console.log("Not enough gold");
         }
@@ -37,23 +36,23 @@ export class PlayerController {
         const costSell = amount * 0.8;
         TowerController.instance.removeTower(tower);
         this.addGold(costSell);
-        HUD.instance.updateHUD();
     }
 
     upgradeTower(idTower: number, level: number, amount: number) {
         if (level < 3 && amount <= this.player.coin) {
             TowerController.instance.upgradeTower(idTower);
             this.consumeGold(amount);
-            HUD.instance.updateHUD();
         }
     }
 
     consumeGold(amount: number) {
         this.player.consumeResources(amount);
+        HUD.instance.updateHUD();
     }
 
     addGold(amount: number) {
         this.player.addResources(amount);
+        HUD.instance.updateHUD();
     }
 
     // Nhan damage khi enemy di vao thanh

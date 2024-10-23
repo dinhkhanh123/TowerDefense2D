@@ -24,11 +24,9 @@ import AssetLoad from './utils/AssetLoad';
         './atlas/projectiles_atlas.json'
     ]);
 
-    const game = new GameScene(1);
-    app.ticker.add(time => {
-        game.update(time.deltaTime);
-    });
-    app.stage.addChild(game);
+
+    const game = new Game(app);
+    game.start();
 
 })();
 

@@ -1,4 +1,6 @@
 import { Container, Text, Graphics } from 'pixi.js';
+import { EventHandle } from '../../utils/EventHandle';
+import { Game } from '../../game';
 
 export class ResultPannel extends Container {
     private background: Graphics;
@@ -7,8 +9,10 @@ export class ResultPannel extends Container {
     private retryButton: Graphics;
     private exitButton: Graphics;
 
+
     constructor(isWin: boolean) {
         super();
+
 
         // Tạo background cho bảng kết quả
         this.background = new Graphics();
@@ -72,9 +76,8 @@ export class ResultPannel extends Container {
     }
 
     private onRetry = () => {
-        // Logic để chơi lại game, ví dụ: khởi động lại cấp độ
-        console.log("Retry clicked");
-        this.emit("retry"); // Gửi sự kiện retry để GameScene lắng nghe
+        console.log('Retry clicked');
+        Game.instance.reloadGameScene();
     };
 
     private onExit = () => {

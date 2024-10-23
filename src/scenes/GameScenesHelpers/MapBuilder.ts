@@ -1,6 +1,6 @@
 import { Container, Graphics, Sprite, Texture } from "pixi.js";
-import { TowerSelectionPannel } from "./TowerSelectionPannel";
-import { TowerInfoPannel } from "./TowerInfoPannel";
+import { TowerSelectionPannel } from "../TowerSelectionPannel";
+import { TowerInfoPannel } from "../TowerInfoPannel";
 
 export class MapBuilder {
     private mapContainer: Container;

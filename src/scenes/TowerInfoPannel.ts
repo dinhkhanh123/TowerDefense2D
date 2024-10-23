@@ -3,6 +3,7 @@ import { Tower } from "../models/Tower";
 import { PlayerController } from "../controllers/PlayerController";
 import { TowerSelectionPannel } from "./TowerSelectionPannel";
 
+
 export class TowerInfoPannel extends Container {
     public static instance: TowerInfoPannel;
     private towerRange: Sprite;

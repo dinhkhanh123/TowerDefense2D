@@ -8,7 +8,7 @@ export const enemiesData: Enemy[] = [
         20,    // HP
         1,    // Speed
         1,     // Damage
-        50
+        20
     ),
     new Enemy(
         2,
@@ -16,7 +16,7 @@ export const enemiesData: Enemy[] = [
         30,    // HP
         1.5,    // Speed
         1,     // Damage
-        100
+        50
 
     ),
     new Enemy(
@@ -25,7 +25,7 @@ export const enemiesData: Enemy[] = [
         50,    // HP
         1.0,    // Speed
         2,     // Damage
-        150
+        70
 
     ),
     new Enemy(
@@ -34,7 +34,7 @@ export const enemiesData: Enemy[] = [
         50,    // HP
         0.8,    // Speed
         2,     // Damage
-        300
+        80
     ),
     new Enemy(
         5,
@@ -42,6 +42,6 @@ export const enemiesData: Enemy[] = [
         50,    // HP
         0.8,    // Speed
         2,     // Damage
-        300
+        100
     )
 ];

@@ -12,15 +12,14 @@ import { ProjectileController } from '../controllers/ProjectileController';
 import { LevelTypes } from '../types/LevelTypes';
 import { GameConfig } from '../config/GameConfig';
 import { PlayerController } from '../controllers/PlayerController';
-import { HUD } from './HUD';
+import { HUD } from './GameScenesHelpers/HUD';
 import { TowerInfoPannel } from './TowerInfoPannel';
 import { TowerSelectionPannel } from './TowerSelectionPannel';
-import { MapBuilder } from './MapBuilder';
-import { ResultPannel } from './ResultPannel';
+import { MapBuilder } from './GameScenesHelpers/MapBuilder';
+import { ResultPannel } from './GameScenesHelpers/ResultPannel';
 
 
 export class GameScene extends Container {
-    public static instance: GameScene;
     private levelManager: LevelManager;
     private objectPool: ObjectPool;
     private mapContainer: Container;
@@ -33,20 +32,26 @@ export class GameScene extends Container {
     private mapBuilder: MapBuilder;
     private headsUpDisplay: HUD;
 
+    private levelId: number;
+    private levelData: LevelTypes;
+    private isGameOver: boolean = false;
     constructor(levelId: number) {
         super();
-        GameScene.instance = this;
+
+
+        this.levelId = levelId;
+
         this.objectPool = new ObjectPool();
         this.mapContainer = new Container();
         this.addChild(this.mapContainer);
 
-        this.levelManager = new LevelManager(levelId);
-        const levelData = this.levelManager.getLevelData();
+        this.levelManager = new LevelManager(this.levelId);
+        this.levelData = this.levelManager.getLevelData();
 
         this.towerController = new TowerController(this.mapContainer);
         this.projectileController = new ProjectileController(this.mapContainer);
-        this.enemyController = new EnemyController(this.mapContainer, levelData.map.tiles);
-        this.playerController = new PlayerController(levelData.id);
+        this.enemyController = new EnemyController(this.mapContainer, this.levelData.map.tiles);
+        this.playerController = new PlayerController(this.levelData.id);
 
 
         this.headsUpDisplay = new HUD();
@@ -56,36 +61,29 @@ export class GameScene extends Container {
         this.towerInfoPannel = new TowerInfoPannel();
         this.addChild(this.towerInfoPannel)
         this.mapBuilder = new MapBuilder(this.mapContainer);
-        this.mapBuilder.buildMap(levelData.map.tiles);
+        this.mapBuilder.buildMap(this.levelData.map.tiles);
 
-        this.enemyController.spawnEnemyFromLevel(levelData);
+        this.startSpawn();
 
         EventHandle.on('gameResult', (isWin) => { this.showResult(isWin) });
 
     }
 
-    showResult(isWin: boolean): void {
-        const resultPannel = new ResultPannel(isWin);
-        this.addChild(resultPannel);
+    private showResult(isWin: boolean): void {
+        this.isGameOver = true;
+        const resultPanel = new ResultPannel(isWin);
+        this.addChild(resultPanel);
     }
 
-    private retryGame(): void {
-        // Logic để chơi lại game
-        console.log('Restarting game...');
-        this.removeChild(GameScene.instance);
-        // Khởi động lại GameScene
-    }
-
-    private exitGame(): void {
-        // Logic để thoát game
-        console.log('Exiting to main menu...');
-        this.removeChild(GameScene.instance);
-        // Quay về MainMenuScene
+    startSpawn() {
+        this.enemyController.spawnEnemyFromLevel(this.levelData);
     }
 
     update(deltaTime: number) {
-        this.enemyController.update(deltaTime);
-        this.towerController.update(deltaTime);
-        this.projectileController.update(deltaTime);
+        if (!this.isGameOver) {
+            this.enemyController.update(deltaTime);
+            this.towerController.update(deltaTime);
+            this.projectileController.update(deltaTime);
+        }
     }
 }

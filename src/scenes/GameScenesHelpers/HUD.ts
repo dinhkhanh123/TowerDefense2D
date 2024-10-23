@@ -1,5 +1,5 @@
 import { Container, Graphics, Text } from "pixi.js";
-import { PlayerController } from '../controllers/PlayerController';
+import { PlayerController } from '../../controllers/PlayerController';
 
 export class HUD extends Container {
     public static instance: HUD;
