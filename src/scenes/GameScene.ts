@@ -32,6 +32,7 @@ export class GameScene extends Container {
     private mapBuilder: MapBuilder;
     private headsUpDisplay: HUD;
 
+
     private levelId: number;
     private levelData: LevelTypes;
     private isGameOver: boolean = false;
@@ -54,30 +55,25 @@ export class GameScene extends Container {
         this.playerController = new PlayerController(this.levelData.id);
 
 
-        this.headsUpDisplay = new HUD();
-        this.addChild(this.headsUpDisplay);
+        this.mapBuilder = new MapBuilder(this.mapContainer, this.levelData);
+        this.mapBuilder.buildMap();
         this.towerSelectionPannel = new TowerSelectionPannel();
         this.addChild(this.towerSelectionPannel);
         this.towerInfoPannel = new TowerInfoPannel();
         this.addChild(this.towerInfoPannel)
-        this.mapBuilder = new MapBuilder(this.mapContainer);
-        this.mapBuilder.buildMap(this.levelData.map.tiles);
+        this.headsUpDisplay = new HUD();
+        this.addChild(this.headsUpDisplay);
 
-        this.startSpawn();
-
-        EventHandle.on('gameResult', (isWin) => { this.showResult(isWin) });
+        EventHandle.on('gameResult', this.showResult.bind(this));
 
     }
 
     private showResult(isWin: boolean): void {
-        this.isGameOver = true;
         const resultPanel = new ResultPannel(isWin);
         this.addChild(resultPanel);
+        this.isGameOver = true;
     }
 
-    startSpawn() {
-        this.enemyController.spawnEnemyFromLevel(this.levelData);
-    }
 
     update(deltaTime: number) {
         if (!this.isGameOver) {

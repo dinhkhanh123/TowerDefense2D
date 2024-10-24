@@ -64,8 +64,6 @@ export class Player {
         this.health -= amount;
         if (this.health <= 0) {
             this.health = 0;
-            console.log("Game Over");
-            EventHandle.emit('gameResult', false);
         }
     }
 }

@@ -7,19 +7,24 @@ import { TowerController } from "./TowerController";
 import { GameScene } from "../scenes/GameScene";
 import { Tower } from "../models/Tower";
 import { HUD } from "../scenes/GameScenesHelpers/HUD";
+import { EnemyController } from "./EnemyController";
+import { EventHandle } from "../utils/EventHandle";
 
 export class PlayerController {
     public static instance: PlayerController;
     private player!: Player;
+    private currentWave: number;
+    private isGameOver: boolean = false;
+
     constructor(idLevel: number) {
         PlayerController.instance = this;
+        this.currentWave = 0;
 
         const levelData = levels.find(lv => lv.id == idLevel);
         if (levelData) {
             this.player = new Player(levelData.id, levelData.name, levelData.resources.gold, levelData.resources.health, levelData.waves.length);
         }
     }
-
 
 
     buyTower(towerType: TowerType, baseSprite: Sprite) {
@@ -60,9 +65,25 @@ export class PlayerController {
         if (this.player.health >= amount) {
             this.player.takeDamage(amount);
             HUD.instance.updateHUD();
+
+            if (this.player.health === 0) {
+                this.isGameOver = true;
+                EventHandle.emit('gameResult', false);
+            }
         }
     }
 
+    checkWin() {
+        if (!this.isGameOver && this.getCurrentWave() === this.getWaves()) {
+            if (this.player.health > 0)
+                EventHandle.emit('gameResult', true);
+        }
+    }
+
+    updateCurrentWave(wave: number) {
+        this.currentWave = wave;
+        HUD.instance.updateHUD();
+    }
     // Getter cho thông tin Player
     public getHealth(): number {
         return this.player.health;
@@ -75,4 +96,9 @@ export class PlayerController {
     public getWaves(): number {
         return this.player.wave;
     }
+
+    public getCurrentWave(): number {
+        return this.currentWave;
+    }
+
 }

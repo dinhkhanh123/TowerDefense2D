@@ -6,7 +6,7 @@ export const towersData: Tower[] = [
         "Archer",
         5, // Damage
         150, // Range
-        3, // Fire rate (seconds per shot)
+        4, // Fire rate (seconds per shot)
         100, // Cost
         "arrow" // Projectile type
     ),
@@ -24,7 +24,7 @@ export const towersData: Tower[] = [
         "Mage",
         10, // Damage
         200, // Range
-        5, // Fire rate
+        4, // Fire rate
         200, // Cost
         "magic_blast" // Projectile type
     ),

@@ -45,6 +45,7 @@ export class TowerSelectionPannel extends Container {
         spriteTower.cursor = 'pointer';
         spriteTower.on('pointerdown', () => {
             PlayerController.instance.buyTower(type, this.slotTower);
+            this.visible = false;
         });
         card.addChild(spriteTower);
         return card;

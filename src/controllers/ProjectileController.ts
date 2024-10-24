@@ -23,12 +23,11 @@ export class ProjectileController {
         projectile.sprite.x = tower.sprite.x + 32;
         projectile.sprite.y = tower.sprite.y + 32;
 
-        projectile.sprite.anchor.set(0.5);
-
         projectile.setTarget(enemy, tower.damage, tower.fireRate);
 
         this.projectiles.push(projectile);
 
+        projectile.sprite.zIndex = 100;
         this.map.addChild(projectile.sprite);
     }
 

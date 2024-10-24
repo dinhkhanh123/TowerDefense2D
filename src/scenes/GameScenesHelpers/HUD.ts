@@ -15,6 +15,7 @@ export class HUD extends Container {
         const health = PlayerController.instance.getHealth();
         const money = PlayerController.instance.getGold();
         const wave = PlayerController.instance.getWaves();
+        const currentWave = PlayerController.instance.getCurrentWave();
         const grapbg = new Graphics();
         grapbg.rect(20, 5, 150, 50);
         grapbg.fill(0x77CDFF);
@@ -22,7 +23,7 @@ export class HUD extends Container {
 
         const infoText = new Text(`
             Health: ${health} Money: ${money}
-            Wave: / ${wave}`,
+            Wave: ${currentWave} / ${wave}`,
             {
                 fontFamily: 'Arial',
                 fontSize: 12,

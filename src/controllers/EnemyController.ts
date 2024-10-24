@@ -1,4 +1,4 @@
-import { Container, Graphics } from "pixi.js";
+import { Container, Graphics, Sprite, Texture } from "pixi.js";
 import { Enemy } from "../models/Enemy";
 import { ObjectPool } from "../utils/ObjectPool";
 import { EnemyTypes } from "../types/EnemyTypes";
@@ -18,6 +18,7 @@ export class EnemyController {
     private currentWaveIndex: number = 0;
     private spawnTimer: number = 0;
     private wavePauseTimer: number = 0;
+
 
     private enemiesToSpawn: { type: string, count: number }[] = [];
     private currentEnemyIndex: number = 0;
@@ -40,6 +41,7 @@ export class EnemyController {
         enemy.setPosition(spawnPoint, goal, pathfinding);
 
         this.enemies.push(enemy);
+
         this.map.addChild(enemy.sprite);
     }
 
@@ -55,10 +57,6 @@ export class EnemyController {
         }
     }
 
-    getEnemy(): Enemy[] {
-        return this.enemies;
-    }
-
     update(deltaTime: number) {
         this.enemies.forEach(enemy => {
             enemy.update(deltaTime);
@@ -70,9 +68,21 @@ export class EnemyController {
             if (enemy.hasReachedGoal()) {
                 PlayerController.instance.takeDamage(enemy.damage);
             }
+
         });
 
+
         this.updateWaveSpawning(deltaTime);
+
+        this.updateEnemyZIndex();
+
+        if (this.enemies.length === 0) {
+            PlayerController.instance.checkWin();
+        }
+    }
+
+    getEnemy(): Enemy[] {
+        return this.enemies;
     }
 
     updateWaveSpawning(deltaTime: number) {
@@ -92,6 +102,8 @@ export class EnemyController {
             });
             this.enemiesToSpawn = this.shuffleArray(this.enemiesToSpawn);  // Xáo trộn thứ tự enemy
         }
+
+        PlayerController.instance.updateCurrentWave(this.currentWaveIndex + 1);
 
         if (this.currentEnemyIndex < this.enemiesToSpawn.length) {
             // Kiểm tra nếu spawnTimer đã vượt qua spawnInterval
@@ -119,9 +131,8 @@ export class EnemyController {
             this.currentEnemyIndex = 0;
             this.wavePauseTimer = 0;
 
-            if (this.currentWaveIndex >= this.levelData.waves.length) {
+            if (this.currentWaveIndex === this.levelData.waves.length) {
                 this.isSpawningWave = false;  // Kết thúc tất cả các đợt
-                this.checkAllEnemiesDefeated();
             }
         } else {
             this.wavePauseTimer += deltaTime;
@@ -136,13 +147,8 @@ export class EnemyController {
         this.currentEnemyIndex = 0;
         this.spawnTimer = 0;
         this.wavePauseTimer = 0;
-    }
 
-    private checkAllEnemiesDefeated() {
-        // Kiểm tra nếu không còn enemy nào và đã spawn hết
-        if (this.enemies.length === 0 && this.currentWaveIndex >= this.levelData.waves.length) {
-            EventHandle.emit('gameResult', true);
-        }
+        PlayerController.instance.updateCurrentWave(this.currentEnemyIndex + 1);
     }
 
     private shuffleArray(array: any[]) {
@@ -151,5 +157,36 @@ export class EnemyController {
             [array[i], array[j]] = [array[j], array[i]];
         }
         return array;
+    }
+
+    private updateEnemyZIndex() {
+        this.enemies.forEach((enemy) => {
+            enemy.sprite.zIndex = 1;
+        });
+
+        // Cập nhật zIndex cho từng enemy dựa trên tọa độ
+        for (let i = 0; i < this.enemies.length; i++) {
+            const enemy1 = this.enemies[i];
+            for (let j = 0; j < this.enemies.length; j++) {
+                const enemy2 = this.enemies[j];
+                if (enemy1 !== enemy2) {
+                    // Nếu enemy1 nằm dưới enemy2 (có y lớn hơn), tăng zIndex
+                    if (enemy1.sprite.y > enemy2.sprite.y ||
+                        (enemy1.sprite.y === enemy2.sprite.y && enemy1.sprite.x > enemy2.sprite.x)) {
+                        enemy1.sprite.zIndex++;
+                    }
+                }
+            }
+        }
+    }
+
+    private createSpawnWarning(x: number, y: number): Sprite {
+        const warningSprite = new Sprite(Texture.from('slot_tower'));
+
+        warningSprite.position.set(x, y);
+        warningSprite.interactive = true;
+        this.map.addChild(warningSprite);
+
+        return warningSprite;
     }
 }

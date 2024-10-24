@@ -1,18 +1,20 @@
 import { Container, Graphics, Sprite, Texture } from "pixi.js";
 import { TowerSelectionPannel } from "../TowerSelectionPannel";
 import { TowerInfoPannel } from "../TowerInfoPannel";
+import { LevelTypes } from "../../types/LevelTypes";
+import { EnemyController } from "../../controllers/EnemyController";
 
 export class MapBuilder {
     private mapContainer: Container;
+    private levelData: LevelTypes;
 
-
-    constructor(mapContainer: Container) {
+    constructor(mapContainer: Container, levelData: LevelTypes) {
         this.mapContainer = mapContainer;
-
+        this.levelData = levelData;
     }
 
-    public buildMap(tiles: number[][]): void {
-        tiles.forEach((row, rowIndex) => {
+    public buildMap(): void {
+        this.levelData.map.tiles.forEach((row, rowIndex) => {
             row.forEach((tile, colIndex) => {
                 const x = colIndex * 64;
                 const y = rowIndex * 64;
@@ -32,6 +34,13 @@ export class MapBuilder {
                 }
             });
         });
+
+        const pointStart = this.levelData.waves[0].spawnPoints;
+        for (let i = 0; i < pointStart.length; i++) {
+            const x = pointStart[i].x * 64;
+            const y = pointStart[i].y * 64;
+            this.createStartSpawnTile(x, y);
+        }
     }
 
     private createEmptyTile(x: number, y: number) {
@@ -72,5 +81,22 @@ export class MapBuilder {
         });
 
         this.mapContainer.addChild(slotTowerSprite);
+    }
+
+    // Tạo nút Start Spawn tại vị trí cụ thể
+    private createStartSpawnTile(x: number, y: number): void {
+        const spawnButton = new Sprite(Texture.from('slot_tower'));
+
+        spawnButton.position.set(x, y);
+        spawnButton.interactive = true;
+        spawnButton.eventMode = 'static';
+        spawnButton.cursor = 'pointer';
+
+        spawnButton.on('pointerdown', () => {
+            EnemyController.instance.spawnEnemyFromLevel(this.levelData);
+            spawnButton.visible = false;
+        });
+
+        this.mapContainer.addChild(spawnButton);
     }
 }
